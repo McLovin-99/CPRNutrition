@@ -7,6 +7,10 @@ on:
   schedule:
     - cron: "23 15 * * 1,3,5"
   workflow_dispatch:
+    inputs:
+      script:
+        description: "Remake this script id instead of making the next one (optional)"
+        required: false
 
 permissions:
   contents: write
@@ -54,7 +58,9 @@ jobs:
           fi
       - name: Make next slideshow
         if: steps.key.outputs.ok == 'true'
-        run: python tools/slides/make.py --out out
+        env:
+          SCRIPT_ID: ${{ inputs.script }}
+        run: python tools/slides/make.py --out out ${SCRIPT_ID:+--id "$SCRIPT_ID"}
       - name: Commit
         if: steps.key.outputs.ok == 'true'
         working-directory: out

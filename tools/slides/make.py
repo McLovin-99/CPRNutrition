@@ -61,7 +61,7 @@ def search_photos(query):
     if os.environ.get("PIXABAY_API_KEY"):
         hits = get_json("https://pixabay.com/api/?" + urllib.parse.urlencode({
             "key": os.environ["PIXABAY_API_KEY"], "q": query[:100], "image_type": "photo",
-            "orientation": "vertical", "safesearch": "true", "per_page": 20}))["hits"]
+            "orientation": "vertical", "category": "food", "safesearch": "true", "per_page": 20}))["hits"]
         return [(h["id"], h["largeImageURL"], f'{h["user"]} on Pixabay: {h["pageURL"]}') for h in hits]
     if os.environ.get("PEXELS_API_KEY"):
         photos = get_json("https://api.pexels.com/v1/search?" + urllib.parse.urlencode(
@@ -76,8 +76,8 @@ def fetch_photo(query, seed, used):
     photos = [p for p in photos if p[0] not in used] or photos
     if not photos:
         raise SystemExit(f"No photos found for {query!r}")
-    # Stable pick per script so reruns give the same slideshow.
-    pid, url, credit = photos[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % min(len(photos), 6)]
+    # Stable pick among the top few (most relevant) so reruns give the same slideshow.
+    pid, url, credit = photos[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % min(len(photos), 3)]
     used.add(pid)
     req = urllib.request.Request(url, headers={"User-Agent": "cpr-nutrition-slides"})
     with urllib.request.urlopen(req, timeout=60) as r:
