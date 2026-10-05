@@ -1,0 +1,40 @@
+name: Grow food pages
+
+# Every Monday, publish the next batch of food pages and rebuild the site.
+on:
+  schedule:
+    - cron: "17 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: grow-site
+  cancel-in-progress: false
+
+jobs:
+  grow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Publish next batch
+        run: python3 tools/build.py --grow
+      - name: Commit
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then echo "Nothing new"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish next batch of food pages"
+          git push
+      # Pushes made with GITHUB_TOKEN may not start a Pages build on their own.
+      - name: Request Pages build
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds"

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protein per calorie calculator (CPR score)</title>
+<meta name="description" content="Free calculator: enter calories and protein to get protein per calorie and a CPR score, plus your daily protein target.">
+<link rel="canonical" href="https://mclovin-99.github.io/CPRNutrition/calculator/">
+<meta name="apple-itunes-app" content="app-id=6745491382">
+<meta property="og:title" content="Protein per calorie calculator (CPR score)">
+<meta property="og:description" content="Free calculator: enter calories and protein to get protein per calorie and a CPR score, plus your daily protein target.">
+<meta property="og:url" content="https://mclovin-99.github.io/CPRNutrition/calculator/">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/CPRNutrition/assets/site.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://mclovin-99.github.io/CPRNutrition/"}, {"@type": "ListItem", "position": 2, "name": "Calculator", "item": "https://mclovin-99.github.io/CPRNutrition/calculator/"}]}</script>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="/CPRNutrition/"><span class="mark">CPR</span> Nutrition</a>
+    <nav class="nav">
+      <a href="/CPRNutrition/best/">Rankings</a>
+      <a href="/CPRNutrition/foods/">Foods</a>
+      <a href="/CPRNutrition/calculator/">Calculator</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/CPRNutrition/">Home</a> / <span>Calculator</span></nav>
+
+<h1>Protein per calorie calculator</h1>
+<p class="lead">Enter calories and protein from any nutrition label, meal or whole day to get its CPR score.
+100% means 10 g of protein per 100 calories.</p>
+<form class="calc" onsubmit="return false">
+  <label>Calories<input id="kcal" type="number" min="0" step="any" inputmode="decimal" value="500"></label>
+  <label>Protein (g)<input id="prot" type="number" min="0" step="any" inputmode="decimal" value="35"></label>
+</form>
+<div class="score" id="out"><div class="score-num" id="num">70%</div><div id="txt"></div></div>
+<h2>Daily protein target</h2>
+<form class="calc" onsubmit="return false">
+  <label>Daily calories<input id="day" type="number" min="0" step="any" inputmode="decimal" value="2200"></label>
+</form>
+<p id="daytxt" class="lead"></p>
+<script>
+function g(c){return c>=100?['Excellent','excellent']:c>=70?['Good','good']:c>=40?['Fair','fair']:['Low','low'];}
+function run(){
+  const k=parseFloat(document.getElementById('kcal').value)||0,p=parseFloat(document.getElementById('prot').value)||0;
+  const c=k>0?p/k*1000:0,[t,cls]=g(c);
+  document.getElementById('out').className='score '+cls;
+  document.getElementById('num').textContent=Math.round(c)+'%';
+  document.getElementById('txt').innerHTML='<strong>CPR score: '+t+'</strong><br>'+(k>0?(p/k*100).toFixed(1):'0')+' g of protein per 100 calories';
+  const d=parseFloat(document.getElementById('day').value)||0;
+  document.getElementById('daytxt').textContent='At '+Math.round(d)+' calories a day, a 100% CPR score means about '+Math.round(d/10)+' g of protein, and a good 70% score means about '+Math.round(d*0.07)+' g.';
+}
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',run));run();
+</script>
+<h2>How the CPR score works</h2>
+<p>CPR stands for calories-to-protein ratio. Divide grams of protein by calories, then compare the result with 1 g of protein for every 10 calories.
+A chicken breast scores far above 100%, most bread scores below 40%, and a balanced high-protein day lands between 70% and 100%.</p>
+<section class="cta">
+  <div>
+    <h2>Let the app calculate it for every meal</h2>
+    <p>CPR Nutrition scores everything you eat by protein per calorie. Scan a label with AI, log meals in seconds, and see your daily CPR score climb.</p>
+  </div>
+  <a class="store" href="https://apps.apple.com/us/app/cpr-nutrition/id6745491382" rel="noopener">Download on the App Store</a>
+</section>
+</main>
+<footer class="foot">
+  <div class="wrap">
+    <p>Nutrition values come from the USDA National Nutrient Database for Standard Reference, Release 28 (public domain). Values are per 100 g of food as listed by USDA and can differ from brands you buy. This site is for general information, not medical advice.</p>
+    <p><a href="/CPRNutrition/privacy.html">Privacy</a> · <a href="/CPRNutrition/terms.html">Terms</a> · <a href="mailto:CPRNutritionApp@gmail.com">Contact</a></p>
+  </div>
+</footer>
+</body>
+</html>
