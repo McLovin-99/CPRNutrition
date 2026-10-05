@@ -57,17 +57,19 @@ def get_json(url, headers=None):
 
 
 def search_photos(query):
-    """Returns [(id, image_url, credit)] from Pixabay (PIXABAY_API_KEY) or Pexels (PEXELS_API_KEY)."""
+    """Returns [(id, image_url, credit, description)] from Pixabay (PIXABAY_API_KEY) or Pexels (PEXELS_API_KEY)."""
     if os.environ.get("PIXABAY_API_KEY"):
         hits = get_json("https://pixabay.com/api/?" + urllib.parse.urlencode({
             "key": os.environ["PIXABAY_API_KEY"], "q": query[:100], "image_type": "photo",
             "orientation": "vertical", "category": "food", "safesearch": "true", "per_page": 20}))["hits"]
-        return [(h["id"], h["largeImageURL"], f'{h["user"]} on Pixabay: {h["pageURL"]}') for h in hits]
+        return [(h["id"], h["largeImageURL"], f'{h["user"]} on Pixabay: {h["pageURL"]}', h.get("tags", ""))
+                for h in hits]
     if os.environ.get("PEXELS_API_KEY"):
         photos = get_json("https://api.pexels.com/v1/search?" + urllib.parse.urlencode(
             {"query": query, "orientation": "portrait", "per_page": 15}),
             {"Authorization": os.environ["PEXELS_API_KEY"]})["photos"]
-        return [(p["id"], p["src"]["large2x"], f'{p["photographer"]} on Pexels: {p["url"]}') for p in photos]
+        return [(p["id"], p["src"]["large2x"], f'{p["photographer"]} on Pexels: {p["url"]}', p.get("alt") or "")
+                for p in photos]
     raise SystemExit("Set PIXABAY_API_KEY or PEXELS_API_KEY (or use --dry-run).")
 
 
@@ -76,8 +78,14 @@ def fetch_photo(query, seed, used):
     photos = [p for p in photos if p[0] not in used] or photos
     if not photos:
         raise SystemExit(f"No photos found for {query!r}")
-    # Stable pick among the top few (most relevant) so reruns give the same slideshow.
-    pid, url, credit = photos[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % min(len(photos), 3)]
+    # Search results drift (e.g. "trail mix" -> raisin bread), so keep only the
+    # photos whose tags mention the most query words, in the site's order.
+    words = [w for w in query.lower().split() if len(w) > 2]
+    score = {p[0]: sum(w in p[3].lower() for w in words) for p in photos}
+    best = max(score.values())
+    photos = [p for p in photos if score[p[0]] == best]
+    # Stable pick among the top few so reruns give the same slideshow.
+    pid, url, credit, _ = photos[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % min(len(photos), 3)]
     used.add(pid)
     req = urllib.request.Request(url, headers={"User-Agent": "cpr-nutrition-slides"})
     with urllib.request.urlopen(req, timeout=60) as r:
