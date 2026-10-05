@@ -79,9 +79,15 @@ def fetch_photo(query, seed, used):
     if not photos:
         raise SystemExit(f"No photos found for {query!r}")
     # Search results drift (e.g. "trail mix" -> raisin bread), so keep only the
-    # photos whose tags mention the most query words, in the site's order.
+    # photos whose tags best match the query, in the site's order. The first two
+    # words are the subject ("peanut butter"), so a tag with that phrase wins.
     words = [w for w in query.lower().split() if len(w) > 2]
-    score = {p[0]: sum(w in p[3].lower() for w in words) for p in photos}
+    subject = " ".join(query.lower().split()[:2])
+
+    def match(tags):
+        tags = tags.lower()
+        return 10 * (subject in tags) + sum(w in tags for w in words)
+    score = {p[0]: match(p[3]) for p in photos}
     best = max(score.values())
     photos = [p for p in photos if score[p[0]] == best]
     # Stable pick among the top few so reruns give the same slideshow.

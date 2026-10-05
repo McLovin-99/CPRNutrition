@@ -4,7 +4,7 @@
    "slides": [
      {"q": "granola bowl", "text": "foods that look healthy but leave you starving in a deficit"},
      {"q": "granola", "food": [["08037", 122]], "text": "1 cup of granola: {cal} calories, {protein} g protein. a whole meal of calories that won't keep you full"},
-     {"q": "peanut butter jar spoon", "food": [["16098", 32]], "text": "2 tbsp peanut butter: {cal} calories, {protein} g protein. it's a fat, not a protein"},
+     {"q": "peanut butter spoon", "food": [["16098", 32]], "text": "2 tbsp peanut butter: {cal} calories, {protein} g protein. it's a fat, not a protein"},
      {"q": "trail mix nuts raisins", "food": [["19059", 75]], "text": "half a cup of trail mix: {cal} calories, {protein} g protein"},
      {"q": "yogurt blueberries bowl", "food": [["01256", 170], ["09050", 74]], "text": "what actually keeps you full: greek yogurt + berries. {cal} calories, {protein} g protein"}
    ]},
@@ -66,7 +66,7 @@
    "caption": "same calories, very different protein #caloriedeficit #highprotein #nutrition",
    "slides": [
      {"q": "food on plates", "text": "200 calories of each. guess which one keeps you full"},
-     {"q": "peanut butter jar spoon", "food": [["16098", 33]], "text": "200 calories of peanut butter: about 2 tbsp. {protein} g protein"},
+     {"q": "peanut butter spoon", "food": [["16098", 33]], "text": "200 calories of peanut butter: about 2 tbsp. {protein} g protein"},
      {"q": "potato chips bowl", "food": [["19411", 38]], "text": "200 calories of chips: a small handful. {protein} g protein"},
      {"q": "chicken breast sliced", "food": [["05064", 121]], "text": "200 calories of chicken breast: almost a full cup. {protein} g protein"},
      {"q": "greek yogurt", "food": [["01256", 339]], "text": "200 calories of greek yogurt: almost 1.5 cups. {protein} g protein"}
