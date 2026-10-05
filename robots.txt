@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://mclovin-99.github.io/CPRNutrition/sitemap.xml
