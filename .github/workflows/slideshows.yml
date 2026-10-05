@@ -22,6 +22,10 @@ jobs:
       PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
     steps:
+      - name: List available secret names (debug)
+        env:
+          ALL: ${{ toJSON(secrets) }}
+        run: echo "$ALL" | jq -r 'keys[]'; echo "pixabay length ${#PIXABAY_API_KEY}"
       - name: Check for a photo API key
         id: key
         run: |
