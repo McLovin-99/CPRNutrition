@@ -19,13 +19,14 @@ jobs:
   make:
     runs-on: ubuntu-latest
     env:
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
     steps:
-      - name: Check for Pexels key
+      - name: Check for a photo API key
         id: key
         run: |
-          if [ -z "$PEXELS_API_KEY" ]; then
-            echo "::notice::Add a PEXELS_API_KEY repository secret to start making slideshows."
+          if [ -z "$PIXABAY_API_KEY$PEXELS_API_KEY" ]; then
+            echo "::notice::Add a PIXABAY_API_KEY repository secret to start making slideshows."
             echo "ok=false" >> "$GITHUB_OUTPUT"
           else
             echo "ok=true" >> "$GITHUB_OUTPUT"

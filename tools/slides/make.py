@@ -2,13 +2,13 @@
 """Makes one TikTok-style photo slideshow from tools/slides/scripts.json.
 
 Each run picks the next script not yet in <out>/log.json, fetches food photos
-from Pexels (PEXELS_API_KEY), renders 1080x1920 slides with Playwright, joins
-them into an MP4 with ffmpeg, and writes:
+from Pixabay (PIXABAY_API_KEY) or Pexels (PEXELS_API_KEY), renders 1080x1920
+slides with Playwright, joins them into an MP4 with ffmpeg, and writes:
 
     <out>/<date>-<id>/slide-1.jpg ... video.mp4, caption.txt, credits.txt
 
 Numbers on the slides come from USDA SR28 via tools/build.py, so they always
-match the website. Use --dry-run to render with plain backgrounds (no Pexels).
+match the website. Use --dry-run to render with plain backgrounds (no key needed).
 """
 import argparse
 import datetime
@@ -50,23 +50,38 @@ def fill_text(script, by_id):
     return out
 
 
-def pexels_photo(query, seed, used):
-    key = os.environ["PEXELS_API_KEY"]
-    url = "https://api.pexels.com/v1/search?" + urllib.parse.urlencode(
-        {"query": query, "orientation": "portrait", "per_page": 15})
-    req = urllib.request.Request(url, headers={"Authorization": key, "User-Agent": "cpr-nutrition-slides"})
+def get_json(url, headers=None):
+    req = urllib.request.Request(url, headers={"User-Agent": "cpr-nutrition-slides", **(headers or {})})
     with urllib.request.urlopen(req, timeout=30) as r:
-        photos = json.load(r)["photos"]
-    photos = [p for p in photos if p["id"] not in used] or photos
+        return json.load(r)
+
+
+def search_photos(query):
+    """Returns [(id, image_url, credit)] from Pixabay (PIXABAY_API_KEY) or Pexels (PEXELS_API_KEY)."""
+    if os.environ.get("PIXABAY_API_KEY"):
+        hits = get_json("https://pixabay.com/api/?" + urllib.parse.urlencode({
+            "key": os.environ["PIXABAY_API_KEY"], "q": query[:100], "image_type": "photo",
+            "orientation": "vertical", "safesearch": "true", "per_page": 20}))["hits"]
+        return [(h["id"], h["largeImageURL"], f'{h["user"]} on Pixabay: {h["pageURL"]}') for h in hits]
+    if os.environ.get("PEXELS_API_KEY"):
+        photos = get_json("https://api.pexels.com/v1/search?" + urllib.parse.urlencode(
+            {"query": query, "orientation": "portrait", "per_page": 15}),
+            {"Authorization": os.environ["PEXELS_API_KEY"]})["photos"]
+        return [(p["id"], p["src"]["large2x"], f'{p["photographer"]} on Pexels: {p["url"]}') for p in photos]
+    raise SystemExit("Set PIXABAY_API_KEY or PEXELS_API_KEY (or use --dry-run).")
+
+
+def fetch_photo(query, seed, used):
+    photos = search_photos(query)
+    photos = [p for p in photos if p[0] not in used] or photos
     if not photos:
-        raise SystemExit(f"No Pexels results for {query!r}")
+        raise SystemExit(f"No photos found for {query!r}")
     # Stable pick per script so reruns give the same slideshow.
-    p = photos[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % min(len(photos), 6)]
-    used.add(p["id"])
-    req = urllib.request.Request(p["src"]["large2x"], headers={"User-Agent": "cpr-nutrition-slides"})
+    pid, url, credit = photos[int(hashlib.sha1(seed.encode()).hexdigest(), 16) % min(len(photos), 6)]
+    used.add(pid)
+    req = urllib.request.Request(url, headers={"User-Agent": "cpr-nutrition-slides"})
     with urllib.request.urlopen(req, timeout=60) as r:
-        data = r.read()
-    return data, f'{p["photographer"]} on Pexels: {p["url"]}'
+        return r.read(), credit
 
 
 SLIDE_HTML = """<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -139,7 +154,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True, help="content folder (holds log.json)")
     ap.add_argument("--id", help="make this script instead of the next one")
-    ap.add_argument("--dry-run", action="store_true", help="no Pexels; plain backgrounds")
+    ap.add_argument("--dry-run", action="store_true", help="no photo API; plain backgrounds")
     args = ap.parse_args()
 
     with open(os.path.join(HERE, "scripts.json")) as f:
@@ -166,7 +181,7 @@ def main():
     for i, (s, text) in enumerate(zip(script["slides"], texts)):
         photo = None
         if not args.dry_run:
-            data, credit = pexels_photo(s["q"], f"{script['id']}-{i}", used)
+            data, credit = fetch_photo(s["q"], f"{script['id']}-{i}", used)
             photo = os.path.join(out_dir, f"_photo-{i}.jpg")
             with open(photo, "wb") as fh:
                 fh.write(data)
@@ -182,7 +197,7 @@ def main():
     with open(os.path.join(out_dir, "caption.txt"), "w") as f:
         f.write(script["caption"] + "\n")
     with open(os.path.join(out_dir, "credits.txt"), "w") as f:
-        f.write("Photos from Pexels (free to use, https://www.pexels.com/license/).\n" + "\n".join(credits) + "\n")
+        f.write("Photos (free for commercial use under the Pixabay/Pexels licenses):\n" + "\n".join(credits) + "\n")
     if not args.dry_run and not args.id:
         log.append({"id": script["id"], "date": date})
         with open(log_path, "w") as f:
