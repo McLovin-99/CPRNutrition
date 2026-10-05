@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Makes one TikTok-style photo slideshow from tools/slides/scripts.json.
+"""Makes one TikTok photo carousel from tools/slides/scripts.json.
 
 Each run picks the next script not yet in <out>/log.json, fetches food photos
 from Pixabay (PIXABAY_API_KEY) or Pexels (PEXELS_API_KEY), renders 1080x1920
-slides with Playwright, joins them into an MP4 with ffmpeg, and writes:
+images with Playwright, and writes:
 
-    <out>/<date>-<id>/slide-1.jpg ... video.mp4, caption.txt, credits.txt
+    <out>/<date>-<id>/slide-1.jpg ... slide-N.jpg, caption.txt, credits.txt
+
+The images are posted as a TikTok photo post (swipeable carousel), not a video.
 
 Numbers on the slides come from USDA SR28 via tools/build.py, so they always
 match the website. Use --dry-run to render with plain backgrounds (no key needed).
@@ -16,7 +18,7 @@ import hashlib
 import html
 import json
 import os
-import subprocess
+import shutil
 import sys
 import urllib.parse
 import urllib.request
@@ -26,7 +28,6 @@ sys.path.insert(0, os.path.dirname(HERE))
 import build  # noqa: E402
 
 APP_LINE = "Scores every food by protein per calorie, so you can pick the ones that keep you full."
-SLIDE_SECONDS, END_SECONDS = 3.0, 3.5
 
 
 def food_totals(items, by_id):
@@ -151,19 +152,6 @@ def render(pages, out_dir):
     return paths
 
 
-def make_video(paths, out_dir):
-    lst = os.path.join(out_dir, "_list.txt")
-    with open(lst, "w") as f:
-        for i, p in enumerate(paths):
-            f.write(f"file '{p}'\nduration {END_SECONDS if i == len(paths) - 1 else SLIDE_SECONDS}\n")
-        f.write(f"file '{paths[-1]}'\n")
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", lst,
-                    "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo", "-shortest",
-                    "-vf", "fps=30,format=yuv420p", "-c:v", "libx264", "-crf", "20",
-                    "-c:a", "aac", "-movflags", "+faststart", os.path.join(out_dir, "video.mp4")], check=True)
-    os.remove(lst)
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", required=True, help="content folder (holds log.json)")
@@ -189,7 +177,8 @@ def main():
     texts = fill_text(script, by_id)
     date = datetime.date.today().isoformat()
     out_dir = os.path.abspath(os.path.join(args.out, f"{date}-{script['id']}"))
-    os.makedirs(out_dir, exist_ok=True)
+    shutil.rmtree(out_dir, ignore_errors=True)  # a remake replaces the old set
+    os.makedirs(out_dir)
 
     pages, credits, used = [], [], set()
     for i, (s, text) in enumerate(zip(script["slides"], texts)):
@@ -206,7 +195,6 @@ def main():
     for f in os.listdir(out_dir):
         if f.startswith("_photo-"):
             os.remove(os.path.join(out_dir, f))
-    make_video(paths, out_dir)
 
     with open(os.path.join(out_dir, "caption.txt"), "w") as f:
         f.write(script["caption"] + "\n")
