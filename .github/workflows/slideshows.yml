@@ -1,8 +1,10 @@
 name: Make photo carousels
 
 # Mon/Wed/Fri: make the next TikTok photo carousel (images, not a video) from
-# tools/slides/scripts.json and save it to the "content" branch
-# (kept off main so the images never land on the website).
+# tools/slides/scripts.json and save it to the "content" branch.
+# Once TikTok is connected, the images are also published under /carousels/
+# on the site (TikTok only pulls photos from a verified URL) and sent to the
+# TikTok inbox as a draft for Tommy to post.
 on:
   schedule:
     - cron: "23 15 * * 1,3,5"
@@ -11,9 +13,13 @@ on:
       script:
         description: "Remake this script id instead of making the next one (optional)"
         required: false
+      tiktok_code:
+        description: "TikTok code (only when connecting TikTok)"
+        required: false
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: slideshows
@@ -25,27 +31,32 @@ jobs:
     env:
       PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+      TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+      TIKTOK_CODE: ${{ inputs.tiktok_code }}
+      SITE: https://mclovin-99.github.io/CPRNutrition
     steps:
-      - name: Check for a photo API key
+      - name: Check for keys
         id: key
         run: |
           if [ -z "$PIXABAY_API_KEY$PEXELS_API_KEY" ]; then
-            echo "::notice::Add a PIXABAY_API_KEY repository secret to start making slideshows."
+            echo "::notice::Add a PIXABAY_API_KEY repository secret to start making carousels."
             echo "ok=false" >> "$GITHUB_OUTPUT"
           else
             echo "ok=true" >> "$GITHUB_OUTPUT"
           fi
+          if [ -n "$TIKTOK_CLIENT_KEY" ] && [ -n "$TIKTOK_CLIENT_SECRET" ]; then
+            echo "tiktok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tiktok=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "$TIKTOK_CODE" ]; then echo "connect=true" >> "$GITHUB_OUTPUT"; else echo "connect=false" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/checkout@v4
         if: steps.key.outputs.ok == 'true'
       - uses: actions/setup-python@v5
         if: steps.key.outputs.ok == 'true'
         with:
           python-version: "3.12"
-      - name: Install Chromium
-        if: steps.key.outputs.ok == 'true'
-        run: |
-          pip install -q playwright
-          python -m playwright install --with-deps chromium
       - name: Check out content branch
         if: steps.key.outputs.ok == 'true'
         run: |
@@ -55,18 +66,68 @@ jobs:
           else
             git worktree add --orphan -b content out
           fi
+
+      # Connecting TikTok: trade the one-time code for a saved refresh token, then stop.
+      - name: Connect TikTok
+        if: steps.key.outputs.ok == 'true' && steps.key.outputs.connect == 'true'
+        run: |
+          echo "::add-mask::$TIKTOK_CODE"
+          python tools/tiktok.py auth "$TIKTOK_CODE" --token-file out/tiktok-token.enc
+
+      - name: Install Chromium
+        if: steps.key.outputs.ok == 'true' && steps.key.outputs.connect != 'true'
+        run: |
+          pip install -q playwright
+          python -m playwright install --with-deps chromium
       - name: Make next carousel
-        if: steps.key.outputs.ok == 'true'
+        id: make
+        if: steps.key.outputs.ok == 'true' && steps.key.outputs.connect != 'true'
         env:
           SCRIPT_ID: ${{ inputs.script }}
-        run: python tools/slides/make.py --out out ${SCRIPT_ID:+--id "$SCRIPT_ID"}
+        run: |
+          python tools/slides/make.py --out out ${SCRIPT_ID:+--id "$SCRIPT_ID"}
+          echo "dir=$(cd out && ls -td 20*/ 2>/dev/null | head -1 | tr -d /)" >> "$GITHUB_OUTPUT"
+      - name: Publish images on the site for TikTok
+        id: publish
+        if: >-
+          steps.key.outputs.connect != 'true' && steps.key.outputs.tiktok == 'true' &&
+          steps.make.outputs.dir != '' && hashFiles('out/tiktok-token.enc') != ''
+        env:
+          DIR: ${{ steps.make.outputs.dir }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "carousels/$DIR"
+          cp out/"$DIR"/slide-*.jpg "carousels/$DIR/"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add carousels
+          if ! git diff --cached --quiet; then
+            git commit -q -m "Publish carousel images $DIR"
+            git pull -q --rebase origin main
+            git push -q origin HEAD:main
+            gh api -X POST "repos/${{ github.repository }}/pages/builds" || true
+          fi
+          # Wait until GitHub Pages serves the new images.
+          last=$(ls out/"$DIR"/slide-*.jpg | wc -l)
+          for i in $(seq 1 40); do
+            if curl -sfI "$SITE/carousels/$DIR/slide-$last.jpg" >/dev/null; then exit 0; fi
+            sleep 15
+          done
+          echo "::error::The images never appeared on the site."
+          exit 1
+      - name: Send to TikTok drafts
+        if: steps.publish.outcome == 'success'
+        env:
+          DIR: ${{ steps.make.outputs.dir }}
+        run: python tools/tiktok.py upload "out/$DIR" --base-url "$SITE/carousels/$DIR/" --token-file out/tiktok-token.enc
+
       - name: Commit
-        if: steps.key.outputs.ok == 'true'
+        if: always() && steps.key.outputs.ok == 'true'
         working-directory: out
         run: |
           if [ -z "$(git status --porcelain)" ]; then echo "Nothing new"; exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -q -m "Add carousel $(ls -d 20*/ | sort | tail -1 | tr -d /)"
+          git commit -q -m "Update carousels $(ls -d 20*/ 2>/dev/null | sort | tail -1 | tr -d /)"
           git push -q origin content

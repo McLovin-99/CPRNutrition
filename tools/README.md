@@ -28,3 +28,12 @@ puts TikTok-style captions on them, ends with a CPR Nutrition card, and saves th
 - Add scripts to keep it going; with three a week, each 12 scripts last about a month.
 - Test locally: `python3 tools/slides/make.py --out /tmp/content --dry-run --id healthy-snack-trap`
   (plain backgrounds, no key needed; needs `pip install playwright`).
+
+### Sending carousels to TikTok drafts
+
+`tools/tiktok.py` uses TikTok's Content Posting API in draft mode (`MEDIA_UPLOAD`): each new carousel
+lands in the TikTok inbox, and Tommy adds a sound and taps Post. It needs the `TIKTOK_CLIENT_KEY` and
+`TIKTOK_CLIENT_SECRET` secrets (under both Actions and Agents), the site's URL prefix verified in the
+TikTok developer portal, and a one-time connection through `tiktok/index.html` (its code goes into the
+workflow's "TikTok code" input). The refresh token is stored encrypted on the `content` branch.
+TikTok only pulls photos from the verified site, so the workflow copies each carousel to `carousels/`.

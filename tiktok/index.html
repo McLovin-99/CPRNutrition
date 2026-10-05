@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Connect TikTok · CPR Nutrition</title>
+<link rel="stylesheet" href="../assets/site.css">
+<style>
+  .connect { max-width: 640px; padding-top: 40px; padding-bottom: 64px; }
+  .connect label { display: block; font-weight: 700; margin: 24px 0 6px; }
+  .connect input, .connect output { display: block; width: 100%; font: 600 1rem/1.4 ui-monospace, Menlo, monospace;
+    padding: 12px; border: 2px solid var(--ink); background: var(--panel); color: var(--ink); word-break: break-all; }
+  .connect button { margin-top: 14px; font: 800 1rem var(--sans); padding: 12px 20px; border: 2px solid var(--ink);
+    background: var(--ink); color: var(--paper); cursor: pointer; }
+  .connect ol { padding-left: 1.2em; }
+  .connect li { margin: 6px 0; }
+  .err { color: var(--lo); font-weight: 700; }
+</style>
+</head>
+<body>
+<main class="wrap connect">
+  <p class="kicker">CPR Nutrition</p>
+  <h1>Connect TikTok</h1>
+
+  <section id="start">
+    <p class="lead">This lets the carousel workflow send drafts to the CPR Nutrition TikTok inbox. Nothing posts without you tapping Post in TikTok.</p>
+    <label for="key">Client key from the TikTok developer portal</label>
+    <input id="key" autocomplete="off" spellcheck="false">
+    <button id="go" type="button">Connect TikTok</button>
+  </section>
+
+  <section id="done" hidden>
+    <p class="lead">TikTok sent back a one-time code. It expires soon, so use it right away.</p>
+    <output id="code"></output>
+    <button id="copy" type="button">Copy code</button>
+    <ol>
+      <li>Open <a href="https://github.com/McLovin-99/CPRNutrition/actions/workflows/slideshows.yml">the carousel workflow</a> on GitHub.</li>
+      <li>Click <b>Run workflow</b>, paste the code into <b>TikTok code</b>, and click the green <b>Run workflow</b>.</li>
+    </ol>
+  </section>
+
+  <p id="error" class="err" hidden></p>
+</main>
+<script>
+(function () {
+  var redirect = "https://mclovin-99.github.io/CPRNutrition/tiktok/";  // must match the portal setting exactly
+  var q = new URLSearchParams(location.search);
+  var show = function (id) { document.getElementById(id).hidden = false; };
+  var store = { get: function (k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+                set: function (k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} } };
+
+  if (q.get("error")) {
+    show("start");
+    var err = document.getElementById("error");
+    err.textContent = "TikTok said: " + (q.get("error_description") || q.get("error"));
+    err.hidden = false;
+  } else if (q.get("code")) {
+    var expected = store.get("tiktok_state");
+    if (expected && expected !== q.get("state")) {
+      show("start");
+      var e2 = document.getElementById("error");
+      e2.textContent = "That sign-in didn't start from this page. Try Connect TikTok again.";
+      e2.hidden = false;
+    } else {
+      document.getElementById("code").textContent = q.get("code");
+      show("done");
+      history.replaceState(null, "", redirect);
+    }
+  } else {
+    show("start");
+  }
+
+  document.getElementById("go").addEventListener("click", function () {
+    var key = document.getElementById("key").value.trim();
+    if (!key) return;
+    var state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    store.set("tiktok_state", state);
+    location.href = "https://www.tiktok.com/v2/auth/authorize/?" + new URLSearchParams({
+      client_key: key, scope: "user.info.basic,video.upload", response_type: "code",
+      redirect_uri: redirect, state: state
+    });
+  });
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var text = document.getElementById("code").textContent;
+    navigator.clipboard.writeText(text).then(function () {
+      document.getElementById("copy").textContent = "Copied";
+    });
+  });
+})();
+</script>
+</body>
+</html>
