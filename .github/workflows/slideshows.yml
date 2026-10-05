@@ -2,9 +2,11 @@ name: Make photo carousels
 
 # Mon/Wed/Fri: make the next TikTok photo carousel (images, not a video) from
 # tools/slides/scripts.json and save it to the "content" branch.
-# Once TikTok is connected, the images are also published under /carousels/
-# on the site (TikTok only pulls photos from a verified URL) and sent to the
-# TikTok inbox as a draft for Tommy to post.
+# With BUFFER_API_KEY set, the images are also published under /carousels/ on
+# the site (Buffer and TikTok only take hosted image URLs) and scheduled as
+# public posts on TikTok and Instagram through Buffer. The TikTok-draft route
+# (tools/tiktok.py) still works if a TikTok connection is ever saved; TikTok
+# then goes to drafts and Buffer posts only to Instagram.
 on:
   schedule:
     - cron: "23 15 * * 1,3,5"
@@ -34,6 +36,7 @@ jobs:
       TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
       TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
       TIKTOK_CODE: ${{ inputs.tiktok_code }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
       SITE: https://mclovin-99.github.io/CPRNutrition
     steps:
       - name: Check for keys
@@ -45,6 +48,7 @@ jobs:
           else
             echo "ok=true" >> "$GITHUB_OUTPUT"
           fi
+          if [ -n "$BUFFER_API_KEY" ]; then echo "buffer=true" >> "$GITHUB_OUTPUT"; else echo "buffer=false" >> "$GITHUB_OUTPUT"; fi
           if [ -n "$TIKTOK_CLIENT_KEY" ] && [ -n "$TIKTOK_CLIENT_SECRET" ]; then
             echo "tiktok=true" >> "$GITHUB_OUTPUT"
           else
@@ -87,17 +91,18 @@ jobs:
         run: |
           python tools/slides/make.py --out out ${SCRIPT_ID:+--id "$SCRIPT_ID"}
           echo "dir=$(cd out && ls -td 20*/ 2>/dev/null | head -1 | tr -d /)" >> "$GITHUB_OUTPUT"
-      - name: Publish images on the site for TikTok
+      - name: Publish images on the site
         id: publish
         if: >-
-          steps.key.outputs.connect != 'true' && steps.key.outputs.tiktok == 'true' &&
-          steps.make.outputs.dir != '' && hashFiles('out/tiktok-token.enc') != ''
+          steps.key.outputs.connect != 'true' && steps.make.outputs.dir != '' &&
+          (steps.key.outputs.buffer == 'true' ||
+           (steps.key.outputs.tiktok == 'true' && hashFiles('out/tiktok-token.enc') != ''))
         env:
           DIR: ${{ steps.make.outputs.dir }}
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "carousels/$DIR"
-          cp out/"$DIR"/slide-*.jpg "carousels/$DIR/"
+          cp out/"$DIR"/slide-*.jpg out/"$DIR"/ig-*.jpg "carousels/$DIR/"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add carousels
@@ -115,8 +120,18 @@ jobs:
           done
           echo "::error::The images never appeared on the site."
           exit 1
+      - name: Schedule public posts through Buffer
+        if: steps.publish.outcome == 'success' && steps.key.outputs.buffer == 'true'
+        env:
+          DIR: ${{ steps.make.outputs.dir }}
+        run: |
+          services=tiktok,instagram
+          if [ "${{ steps.key.outputs.tiktok }}" = true ] && [ -f out/tiktok-token.enc ]; then services=instagram; fi
+          python tools/buffer_post.py "out/$DIR" --base-url "$SITE/carousels/$DIR/" --services "$services"
       - name: Send to TikTok drafts
-        if: steps.publish.outcome == 'success'
+        if: >-
+          steps.publish.outcome == 'success' && steps.key.outputs.tiktok == 'true' &&
+          hashFiles('out/tiktok-token.enc') != ''
         env:
           DIR: ${{ steps.make.outputs.dir }}
         run: python tools/tiktok.py upload "out/$DIR" --base-url "$SITE/carousels/$DIR/" --token-file out/tiktok-token.enc
