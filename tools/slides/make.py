@@ -5,7 +5,7 @@ Each run picks the next script not yet in <out>/log.json, fetches food photos
 from Pixabay (PIXABAY_API_KEY) or Pexels (PEXELS_API_KEY), renders 1080x1920
 images with Playwright, and writes:
 
-    <out>/<date>-<id>/slide-1.jpg ... slide-N.jpg, caption.txt, credits.txt
+    <out>/<date>-<id>/slide-1.jpg ... slide-N.jpg, ig-1.jpg ... (4:5 crops), caption.txt, credits.txt
 
 The images are posted as a TikTok photo post (swipeable carousel), not a video.
 
@@ -146,6 +146,9 @@ def render(pages, out_dir):
             page.wait_for_timeout(300)
             path = os.path.join(out_dir, f"slide-{i}.jpg")
             page.screenshot(path=path, type="jpeg", quality=90)
+            # 4:5 crop for Instagram's feed, which rejects 9:16 images; the text sits inside it.
+            page.screenshot(path=os.path.join(out_dir, f"ig-{i}.jpg"), type="jpeg", quality=90,
+                            clip={"x": 0, "y": 200, "width": 1080, "height": 1350})
             os.remove(f)
             paths.append(path)
         b.close()

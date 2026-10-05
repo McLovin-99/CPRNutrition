@@ -37,3 +37,10 @@ lands in the TikTok inbox, and Tommy adds a sound and taps Post. It needs the `T
 TikTok developer portal, and a one-time connection through `tiktok/index.html` (its code goes into the
 workflow's "TikTok code" input). The refresh token is stored encrypted on the `content` branch.
 TikTok only pulls photos from the verified site, so the workflow copies each carousel to `carousels/`.
+
+### Public posting through Buffer (the default)
+
+With the `BUFFER_API_KEY` secret set (Actions and Agents), each new carousel is copied to `carousels/`
+on the site and `tools/buffer_post.py` schedules it at 7pm New York time as public posts on the
+TikTok and Instagram channels connected in Buffer. TikTok gets the 9:16 `slide-*.jpg`; Instagram gets
+the 4:5 `ig-*.jpg` crops. Buffer can't add TikTok sounds. A service with no connected channel is skipped.
