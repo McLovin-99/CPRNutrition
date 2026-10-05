@@ -12,3 +12,18 @@ calculator, `sitemap.xml` and `robots.txt` from USDA SR28 data in `tools/data/sr
 
 Data: USDA National Nutrient Database for Standard Reference, Release 28 (public domain),
 via the `fda-nutrient-database` npm package.
+
+## Slideshows for TikTok and YouTube Shorts
+
+`.github/workflows/slideshows.yml` runs Mon/Wed/Fri. It takes the next unused script from
+`tools/slides/scripts.json`, pulls food photos from Pixabay (needs the `PIXABAY_API_KEY` repo secret;
+a `PEXELS_API_KEY` works too),
+puts TikTok-style captions on them, ends with a CPR Nutrition card, and saves
+`slide-*.jpg`, `video.mp4`, `caption.txt` and `credits.txt` to a dated folder on the `content` branch.
+`content/log.json` records which scripts are used.
+
+- Numbers in the text (`{cal}`, `{protein}`, `{total_cal}`, `{total_protein}`) are computed from the
+  `food` list of `[usda_id, grams]` on each slide, so they match the website.
+- Add scripts to keep it going; with three a week, each 12 scripts last about a month.
+- Test locally: `python3 tools/slides/make.py --out /tmp/content --dry-run --id healthy-snack-trap`
+  (plain backgrounds, no key needed; needs `pip install playwright` and ffmpeg).

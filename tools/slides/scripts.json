@@ -1,0 +1,110 @@
+[
+  {"id": "healthy-snack-trap",
+   "caption": "the \"healthy\" snack trap #caloriedeficit #highprotein #weightloss #fitnesstok",
+   "slides": [
+     {"q": "granola bowl", "text": "foods that look healthy but leave you starving in a deficit"},
+     {"q": "granola", "food": [["08037", 122]], "text": "1 cup of granola: {cal} calories, {protein} g protein. a whole meal of calories that won't keep you full"},
+     {"q": "peanut butter spoon", "food": [["16098", 32]], "text": "2 tbsp peanut butter: {cal} calories, {protein} g protein. it's a fat, not a protein"},
+     {"q": "trail mix", "food": [["19059", 75]], "text": "half a cup of trail mix: {cal} calories, {protein} g protein"},
+     {"q": "greek yogurt blueberries", "food": [["01256", 170], ["09050", 74]], "text": "what actually keeps you full: greek yogurt + berries. {cal} calories, {protein} g protein"}
+   ]},
+  {"id": "beats-an-egg",
+   "caption": "eggs are great but these are better #highprotein #proteinsnacks #caloriedeficit #gymtok",
+   "slides": [
+     {"q": "eggs carton", "food": [["01123", 50]], "text": "1 egg = {cal} calories and {protein} g protein. these give you way more protein for the calories"},
+     {"q": "greek yogurt bowl", "food": [["01256", 170]], "text": "1 cup plain greek yogurt: {cal} calories, {protein} g protein"},
+     {"q": "canned tuna", "food": [["15121", 85]], "text": "3 oz canned tuna: {cal} calories, {protein} g protein"},
+     {"q": "cooked shrimp", "food": [["15271", 85]], "text": "3 oz shrimp: {cal} calories, {protein} g protein"},
+     {"q": "cottage cheese", "food": [["01016", 113]], "text": "half a cup of cottage cheese: {cal} calories, {protein} g protein"}
+   ]},
+  {"id": "hungry-by-10am",
+   "caption": "why your breakfast doesn't last #breakfastideas #highproteinbreakfast #caloriedeficit",
+   "slides": [
+     {"q": "coffee shop pastries", "text": "the breakfast that has you hungry again by 10am"},
+     {"q": "blueberry muffin", "food": [["18274", 113]], "text": "a coffee shop muffin: {cal} calories, {protein} g protein"},
+     {"q": "bagel cream cheese", "food": [["18001", 99], ["01017", 29]], "text": "bagel + cream cheese: {cal} calories, {protein} g protein"},
+     {"q": "croissant", "food": [["18239", 57]], "text": "a croissant: {cal} calories, {protein} g protein"},
+     {"q": "scrambled eggs toast", "food": [["01123", 100], ["18075", 32]], "text": "2 eggs + a slice of toast: {cal} calories, {protein} g protein. same calories as the muffin, way more protein"}
+   ]},
+  {"id": "not-protein-bars",
+   "caption": "high protein snacks that aren't protein bars #proteinsnacks #highprotein #snackideas",
+   "slides": [
+     {"q": "snacks on table", "text": "high protein snacks that aren't protein bars"},
+     {"q": "beef jerky", "food": [["19002", 28]], "text": "1 oz beef jerky: {cal} calories, {protein} g protein"},
+     {"q": "edamame", "food": [["11212", 155]], "text": "1 cup edamame: {cal} calories, {protein} g protein"},
+     {"q": "cottage cheese strawberries", "food": [["01016", 113], ["09316", 76]], "text": "cottage cheese + strawberries: {cal} calories, {protein} g protein"},
+     {"q": "string cheese", "food": [["01028", 28]], "text": "a stick of mozzarella string cheese: {cal} calories, {protein} g protein"},
+     {"q": "hard boiled eggs", "food": [["01129", 100]], "text": "2 hard boiled eggs: {cal} calories, {protein} g protein"}
+   ]},
+  {"id": "not-actually-protein",
+   "caption": "these are not protein foods #nutritionmyths #highprotein #caloriedeficit",
+   "slides": [
+     {"q": "peanut butter jar", "text": "\"high protein\" foods that are mostly something else"},
+     {"q": "peanut butter toast", "food": [["16098", 32]], "text": "peanut butter: {cal} calories for {protein} g protein. 75% of it is fat"},
+     {"q": "almonds bowl", "food": [["12061", 28]], "text": "a handful of almonds: {cal} calories, {protein} g protein"},
+     {"q": "hummus", "food": [["16158", 60]], "text": "4 tbsp hummus: {cal} calories, {protein} g protein"},
+     {"q": "grilled chicken breast", "food": [["05064", 85]], "text": "for comparison, 3 oz chicken breast: {cal} calories, {protein} g protein"}
+   ]},
+  {"id": "late-night-swap",
+   "caption": "the late night snack swap #latenightsnack #caloriedeficit #highprotein",
+   "slides": [
+     {"q": "ice cream bowl night", "text": "late night snack swaps that actually fill you up"},
+     {"q": "ice cream", "food": [["19095", 132]], "text": "1 cup of ice cream: {cal} calories, {protein} g protein"},
+     {"q": "potato chips", "food": [["19411", 56]], "text": "2 oz of chips: {cal} calories, {protein} g protein"},
+     {"q": "greek yogurt strawberries", "food": [["01256", 170], ["09316", 76]], "text": "greek yogurt + strawberries: {cal} calories, {protein} g protein"},
+     {"q": "popcorn bowl", "food": [["19034", 24]], "text": "3 cups of air-popped popcorn: {cal} calories. not much protein, but a lot more food"}
+   ]},
+  {"id": "breakfast-30g",
+   "caption": "30 g protein breakfasts under 300 calories #highproteinbreakfast #breakfastideas #fitnesstok",
+   "slides": [
+     {"q": "healthy breakfast table", "text": "breakfasts with 30 g of protein for under 300 calories"},
+     {"q": "egg white omelette", "food": [["01124", 132], ["01123", 50], ["18075", 32]], "text": "4 egg whites + 1 egg + toast: {cal} calories, {protein} g protein"},
+     {"q": "greek yogurt parfait", "food": [["01256", 245], ["09050", 74]], "text": "1.5 cups greek yogurt + blueberries: {cal} calories, {protein} g protein"},
+     {"q": "cottage cheese bowl", "food": [["01016", 226], ["09316", 76]], "text": "1 cup cottage cheese + strawberries: {cal} calories, {protein} g protein"}
+   ]},
+  {"id": "same-200-calories",
+   "caption": "same calories, very different protein #caloriedeficit #highprotein #nutrition",
+   "slides": [
+     {"q": "food on plates", "text": "200 calories of each. guess which one keeps you full"},
+     {"q": "peanut butter spoon", "food": [["16098", 33]], "text": "200 calories of peanut butter: about 2 tbsp. {protein} g protein"},
+     {"q": "potato chips bowl", "food": [["19411", 38]], "text": "200 calories of chips: a small handful. {protein} g protein"},
+     {"q": "chicken breast sliced", "food": [["05064", 121]], "text": "200 calories of chicken breast: almost a full cup. {protein} g protein"},
+     {"q": "greek yogurt", "food": [["01256", 339]], "text": "200 calories of greek yogurt: almost 1.5 cups. {protein} g protein"}
+   ]},
+  {"id": "deficit-dont-buy",
+   "caption": "things that don't belong in a deficit #caloriedeficit #weightlosstips #groceryhaul",
+   "slides": [
+     {"q": "grocery cart", "text": "things that quietly wreck a calorie deficit"},
+     {"q": "granola bar", "food": [["19015", 42]], "text": "2 granola bars: {cal} calories, {protein} g protein"},
+     {"q": "orange juice glass", "food": [["09206", 248]], "text": "a glass of orange juice: {cal} calories, {protein} g protein"},
+     {"q": "raisins", "food": [["09298", 40]], "text": "a quarter cup of raisins: {cal} calories, {protein} g protein"},
+     {"q": "trail mix bag", "food": [["19059", 75]], "text": "half a cup of trail mix: {cal} calories, {protein} g protein"}
+   ]},
+  {"id": "dinner-swap",
+   "caption": "dinner swap, same fullness, more protein #dinnerideas #highprotein #caloriedeficit",
+   "slides": [
+     {"q": "pasta dinner", "text": "same size dinner, way more protein"},
+     {"q": "spaghetti plate", "food": [["20121", 248]], "text": "2 cups of pasta: {cal} calories, {protein} g protein"},
+     {"q": "chicken rice broccoli", "food": [["05064", 113], ["20045", 158], ["11091", 78]], "text": "chicken breast + 1 cup rice + broccoli: {cal} calories, {protein} g protein"},
+     {"q": "burger fries", "food": [["21107", 78], ["21138", 117]], "text": "fast food burger + medium fries: {cal} calories, {protein} g protein"},
+     {"q": "burger patty sweet potato", "food": [["23474", 113], ["11508", 180]], "text": "lean beef patty + baked sweet potato: {cal} calories, {protein} g protein"}
+   ]},
+  {"id": "150g-day",
+   "caption": "a 150 g protein day under 2000 calories #highprotein #whatieatinaday #caloriedeficit",
+   "slides": [
+     {"q": "meal prep containers", "text": "hitting 150 g of protein without going over 2,000 calories"},
+     {"q": "greek yogurt berries", "food": [["01256", 245], ["09050", 74]], "text": "breakfast: greek yogurt + berries. {cal} cal, {protein} g protein"},
+     {"q": "chicken rice bowl", "food": [["05064", 140], ["20045", 158]], "text": "lunch: chicken + rice. {cal} cal, {protein} g protein"},
+     {"q": "beef jerky string cheese", "food": [["19002", 28], ["01028", 28]], "text": "snack: jerky + string cheese. {cal} cal, {protein} g protein"},
+     {"q": "steak sweet potato dinner", "food": [["23474", 170], ["11508", 180], ["11091", 156]], "text": "dinner: lean beef + sweet potato + broccoli. {cal} cal, {protein} g protein"},
+     {"q": "dessert cottage cheese", "food": [["01016", 226]], "text": "dessert: cottage cheese. {cal} cal, {protein} g protein. day total: {total_cal} calories, {total_protein} g protein"}
+   ]},
+  {"id": "fast-food-protein",
+   "caption": "when you're stuck eating out #fastfood #highprotein #caloriedeficit",
+   "slides": [
+     {"q": "fast food", "text": "stuck eating fast food in a deficit? watch the sides"},
+     {"q": "french fries", "food": [["21138", 117]], "text": "medium fries: {cal} calories, {protein} g protein"},
+     {"q": "cheese pizza slice", "food": [["21224", 151]], "text": "2 slices of cheese pizza: {cal} calories, {protein} g protein"},
+     {"q": "hamburger", "food": [["21107", 78]], "text": "a plain single burger: {cal} calories, {protein} g protein. the burger isn't the problem, the fries are"}
+   ]}
+]

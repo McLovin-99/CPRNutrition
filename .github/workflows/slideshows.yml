@@ -1,0 +1,67 @@
+name: Make slideshows
+
+# Mon/Wed/Fri: make the next TikTok/Shorts photo slideshow from
+# tools/slides/scripts.json and save it to the "content" branch
+# (kept off main so videos never land on the website).
+on:
+  schedule:
+    - cron: "23 15 * * 1,3,5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: slideshows
+  cancel-in-progress: false
+
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    env:
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+    steps:
+      - name: Check for a photo API key
+        id: key
+        run: |
+          if [ -z "$PIXABAY_API_KEY$PEXELS_API_KEY" ]; then
+            echo "::notice::Add a PIXABAY_API_KEY repository secret to start making slideshows."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.ok == 'true'
+      - uses: actions/setup-python@v5
+        if: steps.key.outputs.ok == 'true'
+        with:
+          python-version: "3.12"
+      - name: Install ffmpeg and Chromium
+        if: steps.key.outputs.ok == 'true'
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          pip install -q playwright
+          python -m playwright install --with-deps chromium
+      - name: Check out content branch
+        if: steps.key.outputs.ok == 'true'
+        run: |
+          if git fetch -q origin content; then
+            git worktree add out FETCH_HEAD
+            git -C out checkout -q -B content
+          else
+            git worktree add --orphan -b content out
+          fi
+      - name: Make next slideshow
+        if: steps.key.outputs.ok == 'true'
+        run: python tools/slides/make.py --out out
+      - name: Commit
+        if: steps.key.outputs.ok == 'true'
+        working-directory: out
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then echo "Nothing new"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Add slideshow $(ls -d 20*/ | sort | tail -1 | tr -d /)"
+          git push -q origin content
